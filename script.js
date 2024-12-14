@@ -77,32 +77,26 @@ async function fetchIPDetails(ip) {
 async function fetchAndDisplayPublicIP() {
   const result = document.getElementById("details");
   try {
-    // Ambil IP publik langsung dari api.ipify.org
-    const ipResponse = await fetch("https://api.ipify.org?format=json");
-    const ipData = await ipResponse.json();
-    const userIP = ipData.ip;
+    // Ambil detail IP publik menggunakan ipinfo.io
+    const response = await fetch("https://ipinfo.io/json?token=YOUR_TOKEN_HERE");
+    const data = await response.json();
 
-    // Ambil detail lokasi berdasarkan IP
-    const locationResponse = await fetch(`https://ip-api.com/json/${userIP}`);
-    const locationData = await locationResponse.json();
+    console.log("IP Info:", data);
 
-    if (locationData.status === "success") {
-      result.innerHTML = `
-        <p><strong>IP:</strong> ${locationData.query}</p>
-        <p><strong>City:</strong> ${locationData.city}</p>
-        <p><strong>Region:</strong> ${locationData.regionName}</p>
-        <p><strong>Country:</strong> ${locationData.country}</p>
-        <p><strong>Latitude:</strong> ${locationData.lat}</p>
-        <p><strong>Longitude:</strong> ${locationData.lon}</p>
-        <p><strong>ISP:</strong> ${locationData.isp}</p>
-      `;
-    } else {
-      result.innerHTML = `<p style="color: red;">Could not fetch IP details.</p>`;
-    }
+    result.innerHTML = `
+      <p><strong>IP:</strong> ${data.ip}</p>
+      <p><strong>City:</strong> ${data.city}</p>
+      <p><strong>Region:</strong> ${data.region}</p>
+      <p><strong>Country:</strong> ${data.country}</p>
+      <p><strong>Location:</strong> ${data.loc}</p>
+      <p><strong>ISP:</strong> ${data.org}</p>
+    `;
   } catch (error) {
+    console.error("Error:", error.message);
     result.innerHTML = `<p style="color: red;">Error fetching IP details: ${error.message}</p>`;
   }
 }
+
 
 
 // Automatically fetch public IP details on page load
