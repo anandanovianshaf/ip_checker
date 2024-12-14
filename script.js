@@ -73,30 +73,37 @@ async function fetchIPDetails(ip) {
   }
 }
 
-// Function to fetch and display public IP details on page load
+// fetch ip on load
 async function fetchAndDisplayPublicIP() {
   const result = document.getElementById("details");
   try {
-    const response = await fetch(`/api/ip`);
-    const data = await response.json();
+    // Ambil IP publik langsung dari api.ipify.org
+    const ipResponse = await fetch("https://api.ipify.org?format=json");
+    const ipData = await ipResponse.json();
+    const userIP = ipData.ip;
 
-    if (data.status === "success") {
+    // Ambil detail lokasi berdasarkan IP
+    const locationResponse = await fetch(`https://ip-api.com/json/${userIP}`);
+    const locationData = await locationResponse.json();
+
+    if (locationData.status === "success") {
       result.innerHTML = `
-        <p><strong>IP:</strong> ${data.query}</p>
-        <p><strong>City:</strong> ${data.city}</p>
-        <p><strong>Region:</strong> ${data.regionName}</p>
-        <p><strong>Country:</strong> ${data.country}</p>
-        <p><strong>Latitude:</strong> ${data.lat}</p>
-        <p><strong>Longitude:</strong> ${data.lon}</p>
-        <p><strong>ISP:</strong> ${data.isp}</p>
+        <p><strong>IP:</strong> ${locationData.query}</p>
+        <p><strong>City:</strong> ${locationData.city}</p>
+        <p><strong>Region:</strong> ${locationData.regionName}</p>
+        <p><strong>Country:</strong> ${locationData.country}</p>
+        <p><strong>Latitude:</strong> ${locationData.lat}</p>
+        <p><strong>Longitude:</strong> ${locationData.lon}</p>
+        <p><strong>ISP:</strong> ${locationData.isp}</p>
       `;
     } else {
-      result.innerHTML = `<p style="color: red;">Could not fetch public IP details.</p>`;
+      result.innerHTML = `<p style="color: red;">Could not fetch IP details.</p>`;
     }
   } catch (error) {
-    result.innerHTML = `<p style="color: red;">Error fetching public IP details: ${error.message}</p>`;
+    result.innerHTML = `<p style="color: red;">Error fetching IP details: ${error.message}</p>`;
   }
 }
+
 
 // Automatically fetch public IP details on page load
 window.onload = function () {
