@@ -51,7 +51,8 @@ function isValidIPv4(ip) {
 // Function to fetch IP details from ip-api.com
 async function fetchIPDetails(ip) {
   try {
-    const response = await fetch(`http://ip-api.com/json/${ip}`);
+    const response = await fetch(`/api/ip?ip=${ip}`);
+
     const data = await response.json();
 
     if (data.status === "success") {
@@ -76,7 +77,7 @@ async function fetchIPDetails(ip) {
 async function fetchAndDisplayPublicIP() {
   const result = document.getElementById("details");
   try {
-    const response = await fetch("http://ip-api.com/json/");
+    const response = await fetch(`/api/ip?ip=${ip}`);
     const data = await response.json();
 
     if (data.status === "success") {
