@@ -73,35 +73,35 @@ async function fetchIPDetails(ip) {
   }
 }
 
-// fetch ip on load
-async function fetchAndDisplayPublicIP() {
-  const result = document.getElementById("details");
-  try {
-    // Ambil detail IP publik menggunakan ipinfo.io
-    const response = await fetch("https://ipinfo.io/json?token=YOUR_TOKEN_HERE");
-    const data = await response.json();
+// Function to fetch and display public IP details on page load
+// (This section has been removed as requested)
+// async function fetchAndDisplayPublicIP() {
+//   const result = document.getElementById("details");
+//   try {
+//     const response = await fetch(`/api/ip`);
+//     const data = await response.json();
 
-    console.log("IP Info:", data);
-
-    result.innerHTML = `
-      <p><strong>IP:</strong> ${data.ip}</p>
-      <p><strong>City:</strong> ${data.city}</p>
-      <p><strong>Region:</strong> ${data.region}</p>
-      <p><strong>Country:</strong> ${data.country}</p>
-      <p><strong>Location:</strong> ${data.loc}</p>
-      <p><strong>ISP:</strong> ${data.org}</p>
-    `;
-  } catch (error) {
-    console.error("Error:", error.message);
-    result.innerHTML = `<p style="color: red;">Error fetching IP details: ${error.message}</p>`;
-  }
-}
-
-
+//     if (data.status === "success") {
+//       result.innerHTML = `
+//         <p><strong>IP:</strong> ${data.query}</p>
+//         <p><strong>City:</strong> ${data.city}</p>
+//         <p><strong>Region:</strong> ${data.regionName}</p>
+//         <p><strong>Country:</strong> ${data.country}</p>
+//         <p><strong>Latitude:</strong> ${data.lat}</p>
+//         <p><strong>Longitude:</strong> ${data.lon}</p>
+//         <p><strong>ISP:</strong> ${data.isp}</p>
+//       `;
+//     } else {
+//       result.innerHTML = `<p style="color: red;">Could not fetch public IP details.</p>`;
+//     }
+//   } catch (error) {
+//     result.innerHTML = `<p style="color: red;">Error fetching public IP details: ${error.message}</p>`;
+//   }
+// }
 
 // Automatically fetch public IP details on page load
 window.onload = function () {
-  fetchAndDisplayPublicIP();
+  // fetchAndDisplayPublicIP(); // This line has been removed
 
   document
     .getElementById("ip-form")
