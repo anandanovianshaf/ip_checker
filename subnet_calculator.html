@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Subnet Calculator</title>
+    <link rel="stylesheet" href="style.css" />
+    <style>
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      table,
+      th,
+      td {
+        border: 1px solid black;
+      }
+      th,
+      td {
+        padding: 8px;
+        text-align: left;
+      }
+      #subnet-result {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Subnet Calculator</h1>
+
+      <!-- Subnet Form -->
+      <form id="subnet-form">
+        <input
+          type="text"
+          id="ip-address"
+          placeholder="Enter IP Address (e.g., 192.168.1.1)"
+          required
+        />
+
+        <!-- Dropdown for Network Class -->
+        <select id="network-class">
+          <option value="A">Class A</option>
+          <option value="B">Class B</option>
+          <option value="C" selected>Class C</option>
+        </select>
+
+        <!-- Dropdown for Subnet Selection -->
+        <select id="subnet-mask">
+          <option value="24">255.255.255.0 /24</option>
+          <option value="25">255.255.255.128 /25</option>
+          <option value="26">255.255.255.192 /26</option>
+          <option value="27">255.255.255.224 /27</option>
+          <option value="28">255.255.255.240 /28</option>
+          <option value="29">255.255.255.248 /29</option>
+          <option value="30">255.255.255.252 /30</option>
+        </select>
+
+        <button type="submit">Calculate</button>
+      </form>
+
+      <!-- Subnet Result -->
+      <div id="subnet-result">
+        <h2>Subnet Details</h2>
+        <p id="details">
+          Enter data and click Calculate to see subnet details.
+        </p>
+
+        <h3>All Possible Networks</h3>
+        <p id="limit-notification" style="color: gray; display: none">
+          Note: Displaying only the first 30 subnets for simplicity.
+        </p>
+
+        <table id="subnet-table">
+          <thead>
+            <tr>
+              <th>Network Address</th>
+              <th>Usable Host Range</th>
+              <th>Broadcast Address</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <a href="index.html">Back to Home</a>
+    </div>
+
+    <script>
+      const cidrOptions = {
+        A: [8, 15],
+        B: [16, 23],
+        C: [24, 30],
+      };
+
+      const networkClassSelect = document.getElementById("network-class");
+      const subnetMaskSelect = document.getElementById("subnet-mask");
+
+      networkClassSelect.addEventListener("change", () => {
+        const selectedClass = networkClassSelect.value;
+        const [min, max] = cidrOptions[selectedClass];
+
+        // Update CIDR options based on selected class
+        subnetMaskSelect.innerHTML = "";
+        for (let i = min; i <= max; i++) {
+          const subnetMask = (0xffffffff << (32 - i)) >>> 0;
+          const subnetMaskArray = [
+            (subnetMask >>> 24) & 0xff,
+            (subnetMask >>> 16) & 0xff,
+            (subnetMask >>> 8) & 0xff,
+            subnetMask & 0xff,
+          ].join(".");
+          const option = document.createElement("option");
+          option.value = i;
+          option.textContent = `${subnetMaskArray} /${i}`;
+          subnetMaskSelect.appendChild(option);
+        }
+      });
+
+      // Helper function to calculate subnet mask details
+      function calculateSubnetDetails(ip, cidr, networkClass) {
+        const ipParts = ip.split(".").map(Number);
+
+        if (
+          ipParts.length !== 4 ||
+          ipParts.some((part) => part < 0 || part > 255)
+        ) {
+          return { error: "Wrong IP Address: Please enter a valid IP." };
+        }
+
+        const totalHosts = Math.pow(2, 32 - cidr);
+        const usableHosts = totalHosts - 2;
+        const increment = Math.pow(2, 32 - cidr);
+        const networkAddresses = [];
+        const subnetMask = (0xffffffff << (32 - cidr)) >>> 0;
+
+        // Default Prefix for Class A, B, and C
+        const defaultPrefix =
+          networkClass === "A" ? 8 : networkClass === "B" ? 16 : 24;
+        const totalSubnets = Math.pow(2, cidr - defaultPrefix); // Total subnets created
+
+        // Convert base IP to integer
+        let baseAddress =
+          (ipParts[0] << 24) |
+          (ipParts[1] << 16) |
+          (ipParts[2] << 8) |
+          ipParts[3];
+
+        for (let i = 0; i < totalSubnets; i++) {
+          const network = (baseAddress & (subnetMask << 0)) + i * increment;
+          const broadcast = network + increment - 1;
+
+          const networkAddress = [
+            (network >>> 24) & 0xff,
+            (network >>> 16) & 0xff,
+            (network >>> 8) & 0xff,
+            network & 0xff,
+          ].join(".");
+
+          const broadcastAddress = [
+            (broadcast >>> 24) & 0xff,
+            (broadcast >>> 16) & 0xff,
+            (broadcast >>> 8) & 0xff,
+            broadcast & 0xff,
+          ].join(".");
+
+          const usableStart = network + 1;
+          const usableEnd = broadcast - 1;
+          const usableRange = `${[
+            (usableStart >>> 24) & 0xff,
+            (usableStart >>> 16) & 0xff,
+            (usableStart >>> 8) & 0xff,
+            usableStart & 0xff,
+          ].join(".")} - ${[
+            (usableEnd >>> 24) & 0xff,
+            (usableEnd >>> 16) & 0xff,
+            (usableEnd >>> 8) & 0xff,
+            usableEnd & 0xff,
+          ].join(".")}`;
+
+          networkAddresses.push({
+            networkAddress,
+            broadcastAddress,
+            usableRange,
+          });
+        }
+
+        return {
+          subnetMask: [
+            (subnetMask >>> 24) & 0xff,
+            (subnetMask >>> 16) & 0xff,
+            (subnetMask >>> 8) & 0xff,
+            subnetMask & 0xff,
+          ].join("."),
+          totalHosts,
+          usableHosts,
+          totalSubnets,
+          networkAddresses,
+          firstNetworkAddress: networkAddresses[0].networkAddress,
+          firstBroadcastAddress: networkAddresses[0].broadcastAddress,
+        };
+      }
+
+      // Handle form submission
+      document.getElementById("subnet-form").addEventListener("submit", (e) => {
+        e.preventDefault();
+
+        const ip = document.getElementById("ip-address").value;
+        const cidr = parseInt(document.getElementById("subnet-mask").value, 10);
+        const networkClass = document.getElementById("network-class").value;
+        const result = calculateSubnetDetails(ip, cidr, networkClass);
+
+        if (result.error) {
+          document.getElementById("details").innerText = result.error;
+          document.getElementById("subnet-result").style.display = "none";
+          return;
+        }
+
+        // Display subnet details
+        document.getElementById("details").innerHTML = `
+    <p><strong>IP Address:</strong> ${ip}</p>
+    <p><strong>Subnet Mask:</strong> ${result.subnetMask}</p>
+    <p><strong>CIDR Notation:</strong> /${cidr}</p>
+    <p><strong>Subnet Total:</strong> ${result.totalSubnets}</p>
+    <p><strong>Network Address:</strong> ${result.firstNetworkAddress}</p>
+    <p><strong>Broadcast Address:</strong> ${result.firstBroadcastAddress}</p>
+    <p><strong>Total Hosts:</strong> ${result.totalHosts}</p>
+    <p><strong>Usable Hosts:</strong> ${result.usableHosts}</p>
+  `;
+
+        // Populate table with all possible networks
+        const tableBody = document
+          .getElementById("subnet-table")
+          .querySelector("tbody");
+        tableBody.innerHTML = "";
+        result.networkAddresses.forEach(
+          ({ networkAddress, usableRange, broadcastAddress }) => {
+            const row = document.createElement("tr");
+            row.innerHTML = `
+        <td>${networkAddress}</td>
+        <td>${usableRange}</td>
+        <td>${broadcastAddress}</td>
+      `;
+            tableBody.appendChild(row);
+          }
+        );
+
+        // Hide notification, no limitation on displayed subnets
+        const notification = document.getElementById("limit-notification");
+        notification.style.display = "none";
+
+        document.getElementById("subnet-result").style.display = "block";
+      });
+    </script>
+  </body>
+</html>
