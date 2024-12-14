@@ -77,7 +77,7 @@ async function fetchIPDetails(ip) {
 async function fetchAndDisplayPublicIP() {
   const result = document.getElementById("details");
   try {
-    const response = await fetch(`/api/ip?ip=${ip}`);
+    const response = await fetch(`/api/ip`);
     const data = await response.json();
 
     if (data.status === "success") {
