@@ -66,7 +66,7 @@ async function fetchIPDetails(ip) {
         <p><strong>ISP:</strong> ${data.isp}</p>
       `;
     } else {
-      return `<p style="color: red;">Could not fetch details for the given IP.</p>`;
+      return `<p style="color: red;">Could not fetch details for the given IP. Please input the valid Public IP Address!</p>`;
     }
   } catch (error) {
     return `<p style="color: red;">Error fetching IP details: ${error.message}</p>`;
@@ -116,7 +116,7 @@ window.onload = function () {
         const details = await fetchIPDetails(ip);
         result.innerHTML = details;
       } else {
-        result.innerHTML = `<p style="color: red;">${ip} is not a valid IPv4 address.</p>`;
+        result.innerHTML = `<p style="color: red;">${ip} is not a valid IPv4 address. Please input the valid Public IP Address!</p>`;
       }
     });
 };
